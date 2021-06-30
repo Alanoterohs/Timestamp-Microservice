@@ -25,24 +25,25 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
-app.get('/api/:number', (req, res) => {
-  const param = req.params.number;
-
-  const jsonToDate = new Date(param).toLocaleDateString();
-
-  if ((/^([0-2][0-9]|3[0-1])(\/|-)(0[1-9]|1[0-2])\2(\d{4})$/).test(jsonToDate)) {
-    res.json({
-      unix: Date.parse(param),
-      utc: new Date(param).toDateString() + ' ' + new Date(param).toTimeString()
-    });
+app.get("/api/:data?", (req, res) => {
+  const data = req.params.data;
+  let date;
+  if (!data) {
+    date = new Date();
+    return res.json({
+        unix: date.getTime(),
+        utc: date.toUTCString(),
+      });
+  } else if (isNaN(data) && isNaN(Date.parse(data))) {
+    return res.status(400).json({ "error": "Invalid Date" });
   } else {
-    const jsonToNumber = JSON.parse(param);
-    const parseUnix = new Date(jsonToNumber).toDateString() + ' ' + new Date(jsonToNumber).toTimeString();
-    res.json({
-      unix: param,
-      utc: parseUnix,
-    });
+    date = isNaN(data) ? new Date(data) : new Date(Number(data));
   }
+
+  res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString(),
+  });
 });
 
 //listen for requests :)
